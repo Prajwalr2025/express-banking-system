@@ -53,6 +53,61 @@ class Bank {
     getHistory() {
         return this.transactionHistory.getAll();
     }
+
+    findAccount(accountNumber){
+      let current = this.accountsRoot;
+      while(current){
+      if(accountNumber === current.accountNumber){
+          return current;
+      }else if(accountNumber < current.accountNumber){
+          current = current.left;
+      }else{
+          current = current.right;
+      }
+      return null;
+    }
+  } 
+    checkBalance(accountNumber) { 
+        const account = this.findAccount(accountNumber);
+        
+        if (account) {
+            this.transactionHistory.append(`Balance inquiry: Account ${accountNumber} checked balance ($${account.balance}).`);
+            return account.balance;
+        } else {
+            this.transactionHistory.append(`Failed inquiry: Account ${accountNumber} not found.`);
+            return null;
+        }
+    }
+    transfer(fromAccountNumber, toAccountNumber, amount) {
+        if (amount <= 0) {
+            this.transactionHistory.append(`Failed transfer: Invalid amount $${amount}.`);
+            return false;
+        }
+
+        const fromAccount = this.findAccount(fromAccountNumber);
+        const toAccount = this.findAccount(toAccountNumber);
+
+        // Validation checks
+        if (!fromAccount) {
+            this.transactionHistory.append(`Failed transfer: Source account ${fromAccountNumber} not found.`);
+            return false;
+        }
+        if (!toAccount) {
+            this.transactionHistory.append(`Failed transfer: Destination account ${toAccountNumber} not found.`);
+            return false;
+        }
+        if (fromAccount.balance < amount) {
+            this.transactionHistory.append(`Failed transfer: Insufficient funds in account ${fromAccountNumber}.`);
+            return false;
+        }
+    
+    fromAccount.balance -= amount;
+    toAccount.balance += amount;
+        
+        // Log the success
+    this.transactionHistory.append(`Transfer successful: $${amount} from Account ${fromAccountNumber} to Account ${toAccountNumber}.`);
+    return true;  
+    }   
 }
 
 module.exports = Bank;
